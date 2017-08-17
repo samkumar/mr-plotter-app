@@ -1,0 +1,12 @@
+[submodule "mr-plotter-qml"]
+	path = mr-plotter-qml
+	url = git@github.com:SoftwareDefinedBuildings/mr-plotter-qml
+[submodule "qtlibbw"]
+	path = qtlibbw
+	url = https://github.com/immesys/qtlibbw
+[submodule "mr-plotter-layouts"]
+	path = mr-plotter-layouts
+	url = git@github.com:SoftwareDefinedBuildings/mr-plotter-layouts
+[submodule "btrdb/btrdb-cpp"]
+	path = btrdb/btrdb-cpp
+	url = https://github.com/samkumar/btrdb-cpp

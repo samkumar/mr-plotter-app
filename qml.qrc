@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>mr-plotter-layouts/FullLayout.qml</file>
+        <file>TextFieldWithButton.qml</file>
+        <file>BTrDBStreamTree.qml</file>
+        <file>StreamSelectionPane.qml</file>
+        <file>AxisSelectionPane.qml</file>
+        <file>AxisButton.qml</file>
+        <file>mr-plotter-layouts/StandardPlot.qml</file>
+        <file>ActionPane.qml</file>
+        <file>streamaxis.js</file>
+        <file>BTrDBStreamTree2.qml</file>
+        <file>SizedCheckBox.qml</file>
+        <file>streamtree.js</file>
+        <file>PlotPane.qml</file>
+    </qresource>
+</RCC>
