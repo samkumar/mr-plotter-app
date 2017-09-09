@@ -15,6 +15,7 @@
 
 #include <btrdb/btrdb.h>
 #include <grpc++/grpc++.h>
+#include <grpc/impl/codegen/compression_types.h>
 
 #include "requester.h"
 
@@ -40,9 +41,13 @@ inline std::function<void(CbArgs...)> wrap_callback(QObject* to, std::function<v
     };
 }
 
+/* Fill in context params for data operations. */
+void mrplotter_ctx(grpc::ClientContext* ctx) {
+    ctx->set_compression_algorithm(GRPC_COMPRESS_GZIP);
+}
+
 BTrDBDataSource::BTrDBDataSource(QObject *parent)
-    : DataSource(parent), current_js_callback_key(0), connected(false)
-{
+    : DataSource(parent), current_js_callback_key(0), connected(false) {
 }
 
 quint64 BTrDBDataSource::store_callback(QJSValue js_callback) {
@@ -60,14 +65,14 @@ bool BTrDBDataSource::connect(QString addrport) {
 
     std::vector<std::string> endpoints;
     endpoints.push_back(addrport.toStdString());
-    this->btrdb = btrdb::BTrDB::connect(btrdb::default_ctx, endpoints);
+    this->btrdb = btrdb::BTrDB::connect(mrplotter_ctx, endpoints);
     return this->btrdb.get() != nullptr;
 }
 
 void BTrDBDataSource::connectAsync(QString addrport, std::function<void(bool)> on_done) {
     std::vector<std::string> endpoints;
     endpoints.push_back(addrport.toStdString());
-    btrdb::BTrDB::connectAsync(btrdb::default_ctx, endpoints, [=](std::shared_ptr<btrdb::BTrDB> b) {
+    btrdb::BTrDB::connectAsync(mrplotter_ctx, endpoints, [=](std::shared_ptr<btrdb::BTrDB> b) {
         bool success = b.get() != nullptr;
         if (success) {
             this->hostport = addrport;
@@ -97,7 +102,7 @@ bool BTrDBDataSource::listCollections(QString prefix, std::function<void(QString
             delete collection_list;
         }
     });
-    btrdb::Status status = this->btrdb->listCollectionsAsync(btrdb::default_ctx, wrap_callback(this, callback), prefix.toStdString());
+    btrdb::Status status = this->btrdb->listCollectionsAsync(mrplotter_ctx, wrap_callback(this, callback), prefix.toStdString());
     return !status.isError();
 }
 
@@ -142,7 +147,7 @@ bool BTrDBDataSource::lookupStreams(QString collection, bool is_prefix, QMap<QSt
         wrapped(finished, status, plain_streams);
     };
 
-    btrdb::Status status = this->btrdb->lookupStreamsAsync(btrdb::default_ctx, compatible_callback, collection.toStdString(), is_prefix, std_tags, std_annotations);
+    btrdb::Status status = this->btrdb->lookupStreamsAsync(mrplotter_ctx, compatible_callback, collection.toStdString(), is_prefix, std_tags, std_annotations);
     return !status.isError();
 }
 
@@ -267,7 +272,7 @@ void BTrDBDataSource::alignedWindows(const QUuid& uuid, int64_t start, int64_t e
 
     QVector<struct statpt>* streamdata = new QVector<struct statpt>();
     RequestData* request_data = new RequestData(std::move(s));
-    btrdb::Status status = request_data->stream->alignedWindowsAsync(btrdb::default_ctx, [=](bool finished, btrdb::Status stat, std::vector<struct btrdb::StatisticalPoint>& data, std::uint64_t version)
+    btrdb::Status status = request_data->stream->alignedWindowsAsync(mrplotter_ctx, [=](bool finished, btrdb::Status stat, std::vector<struct btrdb::StatisticalPoint>& data, std::uint64_t version)
     {
         Q_UNUSED(stat);
         if (data.size() != 0)
@@ -319,7 +324,7 @@ void BTrDBDataSource::brackets(const QList<QUuid> uuids, BracketCallback callbac
         reqinfo->streams.push_back(this->btrdb->streamFromUUID(uuidArr.constData()));
         std::unique_ptr<btrdb::Stream>& s = reqinfo->streams.back();
 
-        s->nearestAsync(btrdb::default_ctx, [=](btrdb::Status stat, const btrdb::RawPoint& point, std::uint64_t version)
+        s->nearestAsync(mrplotter_ctx, [=](btrdb::Status stat, const btrdb::RawPoint& point, std::uint64_t version)
         {
             Q_UNUSED(version);
             struct brackets& bracks = reqinfo->overall_brackets[uuid];
@@ -332,7 +337,7 @@ void BTrDBDataSource::brackets(const QList<QUuid> uuids, BracketCallback callbac
             }
         }, btrdb::BTrDB::MIN_TIME, false);
 
-        s->nearestAsync(btrdb::default_ctx, [=](btrdb::Status stat, const btrdb::RawPoint& point, std::uint64_t version)
+        s->nearestAsync(mrplotter_ctx, [=](btrdb::Status stat, const btrdb::RawPoint& point, std::uint64_t version)
         {
             Q_UNUSED(version);
             struct brackets& bracks = reqinfo->overall_brackets[uuid];
@@ -358,7 +363,7 @@ void BTrDBDataSource::changedRanges(const QUuid& uuid, uint64_t fromGen, uint64_
 
     // Set initial value to what we should return if there are no changed ranges
     RequestData* request_data = new RequestData(std::move(s));
-    btrdb::Status status = request_data->stream->changesAsync(btrdb::default_ctx, [=](bool finished, btrdb::Status stat, std::vector<struct btrdb::ChangedRange>& data, std::uint64_t version)
+    btrdb::Status status = request_data->stream->changesAsync(mrplotter_ctx, [=](bool finished, btrdb::Status stat, std::vector<struct btrdb::ChangedRange>& data, std::uint64_t version)
     {
         Q_UNUSED(stat);
         if (data.size() != 0)

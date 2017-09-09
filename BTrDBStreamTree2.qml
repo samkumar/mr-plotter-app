@@ -30,7 +30,7 @@ Rectangle {
         /* Some textfields used to search */
         TextFieldWithButton {
             id: collectionSearch
-            defaultText: "Search collection"
+            defaultText: "Search collections"
             buttonText: "\uD83D\uDD0D Collections"
             toolTipText: "Enter keywords that appear in the collection name, separated by spaces.\nExample: Hunter"
             onButtonClicked: function (enteredText) {

@@ -23,7 +23,7 @@ Flickable {
             id: streamTree
 
             width: parent.width
-            height: 300
+            height: 500
 
             onSelectedStreamsChanged: function (selected, deselected) {
                 root.selectedStreamsChanged(selected, deselected);
